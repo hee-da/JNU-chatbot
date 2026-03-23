@@ -40,7 +40,7 @@ const Login = () => {
 		</View>
 
 		{/* 로그인 버튼 */}
-		<TouchableOpacity style={styles.button} onPress={() => router.replace("/chat")}>
+		<TouchableOpacity style={styles.button} onPress={() => router.replace("/home")}>
  			<Text style={styles.buttonText}>로그인</Text>
 		</TouchableOpacity>
 		</LinearGradient>

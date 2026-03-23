@@ -22,18 +22,6 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 15,
   },
-  card: {
-    flex: 1,
-    backgroundColor: "#fff",
-    borderRadius: 20,
-    marginHorizontal: 30,
-    marginBottom: 50,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4.5 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 8,
-  },
   cardInner: {
     flex: 1,
     borderRadius: 20,

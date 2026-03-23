@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Stack } from "expo-router";
 import * as React from "react";
 import { Image, Keyboard, KeyboardEvent, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useChatContext } from "./chatContext";
 import { styles } from "./chatStyles";
 
 type Message = {
@@ -10,7 +10,11 @@ type Message = {
   time: string;
 };
 
-const Chat = () => {
+type Props = {
+  onClose?: () => void;
+};
+
+const Chat = (props: Props) => {
   const greetings = [
     { msg1: "안녕! 나 제록이야!🦌✨", msg2: "오늘은 어떤 게 궁금해서 나를 찾아왔니?" },
     { msg1: "반가워! 제록이가 도와줄게!😊", msg2: "무엇이든 물어봐!" },
@@ -24,6 +28,8 @@ const Chat = () => {
   const [showQuickButtons, setShowQuickButtons] = React.useState(true);
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [keyboardHeight, setKeyboardHeight] = React.useState(0);
+  const { addChat } = useChatContext();
+  const [chatTitle, setChatTitle] = React.useState("");
 
   React.useEffect(() => {
     const showSub = Keyboard.addListener(
@@ -59,20 +65,30 @@ const Chat = () => {
   };
 
   const getShortTime = (fullTime: string) => {
-    // "2026년 3월 19일 목요일 오후 7:48" → "오후 7:48"
     const parts = fullTime.split(" ");
     return parts.slice(4).join(" ");
   };
 
   const getDateOnly = (fullTime: string) => {
-    // "2026년 3월 19일 목요일 오후 7:48" → "2026년 3월 19일 목요일"
     const parts = fullTime.split(" ");
     return parts.slice(0, 4).join(" ");
   };
 
-  const sendMessage = (text: string) => {
+  const sendMessage = (text: string, isQuickBtn: boolean = false) => {
     if (text.trim().length === 0) return;
     const time = getTime();
+
+    // 첫 메세지일 때만 채팅 내역 저장
+    if (messages.length === 0) {
+      if (isQuickBtn) {
+        // 퀵버튼이면 버튼 이름 그대로 저장
+        addChat(text, time);
+      } else {
+        // 직접 입력이면 일단 입력한 내용으로 저장 (나중에 AI 요약으로 교체)
+        addChat(text.length > 20 ? text.slice(0, 20) + "..." : text, time);
+      }
+    }
+
     setMessages(prev => [...prev, { text, isUser: true, time }]);
     setShowQuickButtons(false);
     setInputText("");
@@ -87,136 +103,112 @@ const Chat = () => {
   };
 
   return (
-    <>
-      <Stack.Screen options={{ headerShown: false }} />
-      <View style={[styles.container, { marginBottom: keyboardHeight }]}>
+    <View style={[styles.cardInner, { marginBottom: keyboardHeight }]}>
 
-        {/* 상단 헤더 */}
-        <View style={styles.header}>
+      {/* 카드 상단 - 제록이 프로필 + X버튼 */}
+      <View style={styles.cardHeader}>
+        <View style={styles.profileRow}>
           <Image
-            source={require("../assets/images/chat_logo.png")}
-            style={styles.headerLogo}
+            source={require("../assets/images/제록이_얼굴.png")}
+            style={styles.profileImage}
             resizeMode="contain"
           />
-          <View style={styles.headerIcons}>
-            <Ionicons name="add" size={30} color="#000" />
-            <Ionicons name="notifications-outline" size={30} color="#000" />
-            <Ionicons name="menu" size={30} color="#000" />
+          <Text style={styles.profileName}>제록이</Text>
+        </View>
+        <TouchableOpacity style={styles.closeButton} onPress={props.onClose}>
+          <Ionicons name="close" size={30} color="#999" />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.divider} />
+
+      {/* 스크롤 채팅 영역 */}
+      <ScrollView
+        ref={scrollViewRef}
+        style={styles.scrollArea}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+      >
+        {/* 초기 인사 말풍선 */}
+        <View style={styles.messageRow}>
+          <Image
+            source={require("../assets/images/제록이_기본.png")}
+            style={styles.avatarIcon}
+            resizeMode="contain"
+          />
+          <View style={styles.messageContent}>
+            <View style={styles.messageBubbles}>
+              <View style={styles.bubble}>
+                <Text style={styles.bubbleText}>{randomGreeting.msg1}</Text>
+              </View>
+              <View style={styles.bubble}>
+                <Text style={styles.bubbleText}>{randomGreeting.msg2}</Text>
+              </View>
+            </View>
+            {showQuickButtons && (
+              <View style={styles.quickButtons}>
+                <TouchableOpacity style={styles.quickBtn} onPress={() => sendMessage("📅 학사일정 확인하기", true)}>
+                  <Text style={styles.quickBtnText} adjustsFontSizeToFit numberOfLines={1}>📅 학사일정 확인하기</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.quickBtn} onPress={() => sendMessage("🍱 오늘 학식 메뉴 뭐야?", true)}>
+                  <Text style={styles.quickBtnText} adjustsFontSizeToFit numberOfLines={1}>🍱 오늘 학식 메뉴 뭐야?</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.quickBtn} onPress={() => sendMessage("🎡 주변 맛집/편의시설", true)}>
+                  <Text style={styles.quickBtnText} adjustsFontSizeToFit numberOfLines={1}>🎡 주변 맛집/편의시설</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.quickBtn} onPress={() => sendMessage("☎️ 학과 사무실 번호", true)}>
+                  <Text style={styles.quickBtnText} adjustsFontSizeToFit numberOfLines={1}>☎️ 학과 사무실 번호</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         </View>
 
-        {/* 채팅 카드 */}
-        <View style={styles.card}>
-          <View style={styles.cardInner}>
-
-            {/* 카드 상단 - 제록이 프로필 + X버튼 */}
-            <View style={styles.cardHeader}>
-              <View style={styles.profileRow}>
-                <Image
-                  source={require("../assets/images/제록이_얼굴.png")}
-                  style={styles.profileImage}
-                  resizeMode="contain"
-                />
-                <Text style={styles.profileName}>제록이</Text>
+        {/* 대화 메세지들 */}
+        {messages.map((msg, index) => (
+          <View key={index}>
+            {index === 0 && (
+              <Text style={styles.timestamp}>{getDateOnly(msg.time)}</Text>
+            )}
+            {msg.isUser ? (
+              <View style={styles.userMessageRow}>
+                <Text style={styles.messageTime}>{getShortTime(msg.time)}</Text>
+                <View style={styles.userBubble}>
+                  <Text style={styles.userBubbleText}>{msg.text}</Text>
+                </View>
               </View>
-              <TouchableOpacity style={styles.closeButton}>
-                <Ionicons name="close" size={30} color="#999" />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.divider} />
-
-            {/* 스크롤 채팅 영역 */}
-            <ScrollView
-              ref={scrollViewRef}
-              style={styles.scrollArea}
-              contentContainerStyle={styles.scrollContent}
-              showsVerticalScrollIndicator={false}
-              onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
-            >
-              {/* 초기 인사 말풍선 */}
-              <View style={styles.messageRow}>
+            ) : (
+              <View style={styles.jerokMessageRow}>
                 <Image
                   source={require("../assets/images/제록이_기본.png")}
                   style={styles.avatarIcon}
                   resizeMode="contain"
                 />
-                <View style={styles.messageContent}>
-                  <View style={styles.messageBubbles}>
-                    <View style={styles.bubble}>
-                      <Text style={styles.bubbleText}>{randomGreeting.msg1}</Text>
-                    </View>
-                    <View style={styles.bubble}>
-                      <Text style={styles.bubbleText}>{randomGreeting.msg2}</Text>
-                    </View>
-                  </View>
-                  {showQuickButtons && (
-                    <View style={styles.quickButtons}>
-                      <TouchableOpacity style={styles.quickBtn} onPress={() => sendMessage("📅 학사일정 확인하기")}>
-                        <Text style={styles.quickBtnText} adjustsFontSizeToFit numberOfLines={1}>📅 학사일정 확인하기</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity style={styles.quickBtn} onPress={() => sendMessage("🍱 오늘 학식 메뉴 뭐야?")}>
-                        <Text style={styles.quickBtnText} adjustsFontSizeToFit numberOfLines={1}>🍱 오늘 학식 메뉴 뭐야?</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity style={styles.quickBtn} onPress={() => sendMessage("🎡 주변 맛집/편의시설")}>
-                        <Text style={styles.quickBtnText} adjustsFontSizeToFit numberOfLines={1}>🎡 주변 맛집/편의시설</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity style={styles.quickBtn} onPress={() => sendMessage("☎️ 학과 사무실 번호")}>
-                        <Text style={styles.quickBtnText} adjustsFontSizeToFit numberOfLines={1}>☎️ 학과 사무실 번호</Text>
-                      </TouchableOpacity>
-                    </View>
-                  )}
+                <View style={styles.bubble}>
+                  <Text style={styles.bubbleText}>{msg.text}</Text>
                 </View>
               </View>
-
-              {/* 대화 메세지들 */}
-              {messages.map((msg, index) => (
-                <View key={index}>
-                  {index === 0 && (
-                    <Text style={styles.timestamp}>{getDateOnly(msg.time)}</Text>
-                  )}
-                  {msg.isUser ? (
-                    <View style={styles.userMessageRow}>
-                      <Text style={styles.messageTime}>{getShortTime(msg.time)}</Text>
-                      <View style={styles.userBubble}>
-                        <Text style={styles.userBubbleText}>{msg.text}</Text>
-                      </View>
-                    </View>
-                  ) : (
-                    <View style={styles.jerokMessageRow}>
-                      <Image
-                        source={require("../assets/images/제록이_기본.png")}
-                        style={styles.avatarIcon}
-                        resizeMode="contain"
-                      />
-                      <View style={styles.bubble}>
-                        <Text style={styles.bubbleText}>{msg.text}</Text>
-                      </View>
-                    </View>
-                  )}
-                </View>
-              ))}
-            </ScrollView>
-
-            {/* 입력창 */}
-            <View style={styles.inputBar}>
-              <TextInput
-                style={styles.inputText}
-                placeholder="메세지를 입력하세요"
-                placeholderTextColor="#979c9e"
-                value={inputText}
-                onChangeText={setInputText}
-              />
-              <TouchableOpacity onPress={() => sendMessage(inputText)}>
-                <Text style={styles.sendIcon}>➤</Text>
-              </TouchableOpacity>
-            </View>
-
+            )}
           </View>
-        </View>
+        ))}
+      </ScrollView>
 
+      {/* 입력창 */}
+      <View style={styles.inputBar}>
+        <TextInput
+          style={styles.inputText}
+          placeholder="메세지를 입력하세요"
+          placeholderTextColor="#979c9e"
+          value={inputText}
+          onChangeText={setInputText}
+        />
+        <TouchableOpacity onPress={() => sendMessage(inputText)}>
+          <Text style={styles.sendIcon}>➤</Text>
+        </TouchableOpacity>
       </View>
-    </>
+
+    </View>
   );
 };
 
