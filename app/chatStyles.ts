@@ -51,7 +51,7 @@ export const styles = StyleSheet.create({
     top: 12,
   },
   divider: {
-    height: 2,
+    height: 3,
     backgroundColor: "#c4c4c4",
   },
   scrollArea: {
@@ -60,22 +60,22 @@ export const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: "flex-end",
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
   },
   messageRow: {
     flexDirection: "row",
     alignItems: "flex-end",
-    gap: 5,
+    gap: 2,
   },
   jerokMessageRow: {
     flexDirection: "row",
     alignItems: "flex-end",
-    gap: 5,
+    gap: 2,
     marginBottom: 8,
   },
   avatarIcon: {
-    width: 35,
-    height: 35,
+    width: 40,
+    height: 40,
   },
   messageContent: {
     maxWidth: "95%",
@@ -104,7 +104,7 @@ export const styles = StyleSheet.create({
     marginBottom: 8,
   },
   userBubble: {
-    backgroundColor: "#294093",
+    backgroundColor: "#004099",
     borderRadius: 18,
     borderBottomRightRadius: 4,
     paddingHorizontal: 16,

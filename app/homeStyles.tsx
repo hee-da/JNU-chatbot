@@ -39,30 +39,34 @@ export const styles = StyleSheet.create({
     borderRadius: 20,
     overflow: "hidden",
     backgroundColor: "#fff",
-    padding: 20,
+    padding: 0,  // 패딩 제거
   },
   titleRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
     alignItems: "center",
-    marginBottom: 12,
+    paddingVertical: 30,
   },
   title: {
-    fontSize: 20,
-    fontWeight: "700",
+    fontSize: 22,
+    fontWeight: "800",
     color: "#292929",
+    textAlign: "center",
   },
   titleIcons: {
     flexDirection: "row",
     gap: 15,
+    position: "absolute",
+    right: 20,
   },
   divider: {
-    height: 2,
+    height: 3,
     backgroundColor: "#c4c4c4",
-    marginBottom: 12,
   },
   scrollArea: {
     flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 16,
   },
   historyCard: {
     flexDirection: "row",
@@ -77,7 +81,7 @@ export const styles = StyleSheet.create({
     gap: 6,
   },
   cardTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "600",
     color: "#292929",
   },
@@ -91,7 +95,8 @@ export const styles = StyleSheet.create({
     height: 50,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 12,
+    marginHorizontal: 20,
+    marginVertical: 16,
   },
   startButtonText: {
     fontSize: 16,

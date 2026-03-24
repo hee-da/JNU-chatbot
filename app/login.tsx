@@ -1,5 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { Stack, useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import * as React from "react";
 import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -11,6 +12,7 @@ const Login = () => {
   return (
 	<>
 		<Stack.Screen options={{ headerShown: false }} />
+    <StatusBar style="light" />
 		<LinearGradient	
 		style={styles.container}
 		colors={["#4a89c5", "#004099"]}

@@ -8,6 +8,7 @@ type Message = {
   text: string;
   isUser: boolean;
   time: string;
+  image?: any;
 };
 
 type Props = {
@@ -20,6 +21,17 @@ const Chat = (props: Props) => {
     { msg1: "반가워! 제록이가 도와줄게!😊", msg2: "무엇이든 물어봐!" },
     { msg1: "어서와! 제주대 전문가 제록이야!🌿", msg2: "궁금한 거 있으면 말해줘!" },
     { msg1: "안녕하세요! 제록이예요!🦌", msg2: "오늘도 좋은 하루 되세요!" },
+  ];
+
+  const jerokImages = [
+    require("../assets/images/제록이_기본.png"),
+    require("../assets/images/제록이_공부.png"),
+    require("../assets/images/제록이_귤.png"),
+    require("../assets/images/제록이_기대.png"),
+    require("../assets/images/제록이_반짝.png"),
+    require("../assets/images/제록이_점프.png"),
+    require("../assets/images/제록이_학잠.png"),
+    require("../assets/images/제록이_하트.png"),
   ];
 
   const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
@@ -94,10 +106,12 @@ const Chat = (props: Props) => {
     setInputText("");
 
     setTimeout(() => {
+      const randomImage = jerokImages[Math.floor(Math.random() * jerokImages.length)];
       setMessages(prev => [...prev, {
         text: "답변을 불러오는 중...🔍",
         isUser: false,
         time: getTime(),
+        image: randomImage,
       }]);
     }, 1000);
   };
@@ -133,7 +147,7 @@ const Chat = (props: Props) => {
         {/* 초기 인사 말풍선 */}
         <View style={styles.messageRow}>
           <Image
-            source={require("../assets/images/제록이_기본.png")}
+            source={require("../assets/images/제록이_학잠.png")}
             style={styles.avatarIcon}
             resizeMode="contain"
           />
@@ -181,7 +195,7 @@ const Chat = (props: Props) => {
             ) : (
               <View style={styles.jerokMessageRow}>
                 <Image
-                  source={require("../assets/images/제록이_기본.png")}
+                  source={msg.image ?? require("../assets/images/제록이_기본.png")}
                   style={styles.avatarIcon}
                   resizeMode="contain"
                 />

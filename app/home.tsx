@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import * as React from "react";
 import { Image, Modal, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
@@ -23,6 +24,7 @@ const Home = () => {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
+      <StatusBar style="dark" />
       <View style={styles.container}>
 
         {/* 상단 헤더 */}
@@ -47,10 +49,10 @@ const Home = () => {
 
             {/* 채팅 내역 타이틀 */}
             <View style={styles.titleRow}>
-              <Text style={styles.title}>채팅 내역</Text>
+              <Text style={styles.title}>채팅</Text>
               <View style={styles.titleIcons}>
-                <Ionicons name="search-outline" size={24} color="#000" />
-                <Ionicons name="trash-outline" size={24} color="#000" />
+                <Ionicons name="search-outline" size={25} color="#000" />
+                <Ionicons name="trash-outline" size={25} color="#000" />
               </View>
             </View>
 
