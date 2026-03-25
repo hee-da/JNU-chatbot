@@ -15,7 +15,7 @@ export const styles = StyleSheet.create({
   },
   headerLogo: {
     width: 150,
-    height: 57,
+    height: 65,
   },
   headerIcons: {
     flexDirection: "row",

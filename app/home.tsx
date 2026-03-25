@@ -30,7 +30,7 @@ const Home = () => {
         {/* 상단 헤더 */}
         <View style={styles.header}>
           <Image
-            source={require("../assets/images/chat_logo.png")}
+            source={require("../assets/images/아라봇_로고.png")}
             style={styles.headerLogo}
             resizeMode="contain"
           />

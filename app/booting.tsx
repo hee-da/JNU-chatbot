@@ -19,7 +19,7 @@ const Booting = () => {
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="light" />
       <ImageBackground
-        source={require("../assets/images/booting.png")}
+        source={require("../assets/images/booting (1).png")}
         style={styles.container}
         resizeMode="cover"
       >
