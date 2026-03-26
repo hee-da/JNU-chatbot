@@ -39,13 +39,12 @@ export const styles = StyleSheet.create({
     borderRadius: 20,
     overflow: "hidden",
     backgroundColor: "#fff",
-    padding: 0,  // 패딩 제거
   },
   titleRow: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 30,
+    height: 85,
   },
   title: {
     fontSize: 22,
@@ -108,8 +107,8 @@ export const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "center",
     paddingHorizontal: 25,
-    paddingVertical: 40,
     paddingTop: 140,
+    paddingBottom: 40,
   },
   modalCard: {
     flex: 1,
@@ -122,17 +121,28 @@ export const styles = StyleSheet.create({
     elevation: 8,
     overflow: "hidden",
   },
-  deleteButtonContainer: {
-    justifyContent: "center",
-    marginBottom: 9,
-    height: 70,  // historyCard랑 같은 높이
-  },
   deleteButton: {
     backgroundColor: "#ff4444",
     justifyContent: "center",
     alignItems: "center",
     width: 70,
     borderRadius: 13,
-    height: 70,  // historyCard랑 같은 높이
+    height: 70,
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 10,
+    marginRight: 20,
+    borderWidth: 2,
+    borderColor: "#f0f0f0",
+    borderRadius: 13,
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    fontSize: 15,
+    color: "#000",
+  },
+  highlightText: {
+    color: "#004099",
+    fontWeight: "700",
   },
 });

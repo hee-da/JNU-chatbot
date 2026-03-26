@@ -11,7 +11,7 @@ type Message = {
   image?: any;
 };
 
-type Props = {
+type Props = { 
   onClose?: () => void;
 };
 
@@ -40,8 +40,8 @@ const Chat = (props: Props) => {
   const [showQuickButtons, setShowQuickButtons] = React.useState(true);
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [keyboardHeight, setKeyboardHeight] = React.useState(0);
-  const { addChat } = useChatContext();
-  const [chatTitle, setChatTitle] = React.useState("");
+  const [currentChatId, setCurrentChatId] = React.useState<number | null>(null);
+  const { addChat, updateChatContent } = useChatContext();
 
   React.useEffect(() => {
     const showSub = Keyboard.addListener(
@@ -90,15 +90,18 @@ const Chat = (props: Props) => {
     if (text.trim().length === 0) return;
     const time = getTime();
 
-    // 첫 메세지일 때만 채팅 내역 저장
     if (messages.length === 0) {
+      // 첫 메세지 - 채팅 내역 새로 추가
+      const newId = Date.now();
+      setCurrentChatId(newId);
       if (isQuickBtn) {
-        // 퀵버튼이면 버튼 이름 그대로 저장
-        addChat(text, time);
+        addChat(text, time, text);
       } else {
-        // 직접 입력이면 일단 입력한 내용으로 저장 (나중에 AI 요약으로 교체)
-        addChat(text.length > 20 ? text.slice(0, 20) + "..." : text, time);
+        addChat(text.length > 20 ? text.slice(0, 20) + "..." : text, time, text);
       }
+    } else if (currentChatId !== null) {
+      // 이후 메세지 - 기존 채팅 내역에 내용 추가
+      updateChatContent(currentChatId, text);
     }
 
     setMessages(prev => [...prev, { text, isUser: true, time }]);
@@ -168,11 +171,11 @@ const Chat = (props: Props) => {
                 <TouchableOpacity style={styles.quickBtn} onPress={() => sendMessage("🍱 오늘 학식 메뉴 뭐야?", true)}>
                   <Text style={styles.quickBtnText} adjustsFontSizeToFit numberOfLines={1}>🍱 오늘 학식 메뉴 뭐야?</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.quickBtn} onPress={() => sendMessage("🎡 주변 맛집/편의시설", true)}>
-                  <Text style={styles.quickBtnText} adjustsFontSizeToFit numberOfLines={1}>🎡 주변 맛집/편의시설</Text>
+                <TouchableOpacity style={styles.quickBtn} onPress={() => sendMessage("☔ 지금 학교 날씨 알려줘!", true)}>
+                  <Text style={styles.quickBtnText} adjustsFontSizeToFit numberOfLines={1}>☔ 지금 학교 날씨 알려줘!</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.quickBtn} onPress={() => sendMessage("☎️ 학과 사무실 번호", true)}>
-                  <Text style={styles.quickBtnText} adjustsFontSizeToFit numberOfLines={1}>☎️ 학과 사무실 번호</Text>
+                <TouchableOpacity style={styles.quickBtn} onPress={() => sendMessage("📊 내 성적 분석 & 목표 세우기", true)}>
+                  <Text style={styles.quickBtnText} adjustsFontSizeToFit numberOfLines={1}>📊 내 성적 분석 & 목표 세우기</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -199,8 +202,10 @@ const Chat = (props: Props) => {
                   style={styles.avatarIcon}
                   resizeMode="contain"
                 />
-                <View style={styles.bubble}>
-                  <Text style={styles.bubbleText}>{msg.text}</Text>
+                <View style={{ flexShrink: 1 }}>
+                  <View style={styles.bubble}>
+                    <Text style={styles.bubbleText}>{msg.text}</Text>
+                  </View>
                 </View>
               </View>
             )}
