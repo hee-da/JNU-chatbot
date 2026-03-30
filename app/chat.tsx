@@ -11,8 +11,9 @@ type Message = {
   image?: any;
 };
 
-type Props = { 
+type Props = {
   onClose?: () => void;
+  chatId?: number | null;
 };
 
 const Chat = (props: Props) => {
@@ -41,7 +42,18 @@ const Chat = (props: Props) => {
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [keyboardHeight, setKeyboardHeight] = React.useState(0);
   const [currentChatId, setCurrentChatId] = React.useState<number | null>(null);
-  const { addChat, updateChatContent } = useChatContext();
+  const { addChat, updateChatContent, addMessage, chatHistory } = useChatContext();
+
+  // 기존 채팅 불러오기
+  React.useEffect(() => {
+    if (props.chatId) {
+      const existing = chatHistory.find(c => c.id === props.chatId);
+      if (existing && existing.messages.length > 0) {
+        setMessages(existing.messages);
+        setShowQuickButtons(false);
+      }
+    }
+  }, [props.chatId]);
 
   React.useEffect(() => {
     const showSub = Keyboard.addListener(
@@ -89,33 +101,38 @@ const Chat = (props: Props) => {
   const sendMessage = (text: string, isQuickBtn: boolean = false) => {
     if (text.trim().length === 0) return;
     const time = getTime();
+    let chatId = props.chatId ?? currentChatId;
 
-    if (messages.length === 0) {
-      // 첫 메세지 - 채팅 내역 새로 추가
-      const newId = Date.now();
+    if (messages.length === 0 && !props.chatId) {
+      const newId = addChat(
+        isQuickBtn ? text : (text.length > 20 ? text.slice(0, 20) + "..." : text),
+        time,
+        text
+      );
       setCurrentChatId(newId);
-      if (isQuickBtn) {
-        addChat(text, time, text);
-      } else {
-        addChat(text.length > 20 ? text.slice(0, 20) + "..." : text, time, text);
-      }
+      chatId = newId;
+    } else if (props.chatId) {
+      updateChatContent(props.chatId, text);
     } else if (currentChatId !== null) {
-      // 이후 메세지 - 기존 채팅 내역에 내용 추가
       updateChatContent(currentChatId, text);
     }
 
-    setMessages(prev => [...prev, { text, isUser: true, time }]);
+    const userMessage: Message = { text, isUser: true, time };
+    setMessages(prev => [...prev, userMessage]);
+    if (chatId) addMessage(chatId, userMessage);
     setShowQuickButtons(false);
     setInputText("");
 
     setTimeout(() => {
       const randomImage = jerokImages[Math.floor(Math.random() * jerokImages.length)];
-      setMessages(prev => [...prev, {
+      const botMessage: Message = {
         text: "답변을 불러오는 중...🔍",
         isUser: false,
         time: getTime(),
         image: randomImage,
-      }]);
+      };
+      setMessages(prev => [...prev, botMessage]);
+      if (chatId) addMessage(chatId, botMessage);
     }, 1000);
   };
 

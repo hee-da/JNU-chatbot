@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as React from "react";
-import { Image, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Animated, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import Chat from "./chat";
 import { useChatContext } from "./chatContext";
@@ -11,11 +11,17 @@ import { styles } from "./homeStyles";
 const Home = () => {
   const [chatVisible, setChatVisible] = React.useState(false);
   const [searchVisible, setSearchVisible] = React.useState(false);
-  
   const [searchText, setSearchText] = React.useState("");
   const [activeView, setActiveView] = React.useState<"chat" | "notification">("chat");
+  const [selectedChatId, setSelectedChatId] = React.useState<number | null>(null);
+  const [menuVisible, setMenuVisible] = React.useState(false);
+  const [displayOpen, setDisplayOpen] = React.useState(false);
+  const [deleteMode, setDeleteMode] = React.useState(false);
+  const [selectedIds, setSelectedIds] = React.useState<number[]>([]);
 
   const { chatHistory, deleteChat } = useChatContext();
+  const screenWidth = Dimensions.get("window").width;
+  const slideAnim = React.useRef(new Animated.Value(screenWidth)).current;
 
   const filteredHistory = chatHistory.filter(item =>
     item.title.toLowerCase().includes(searchText.toLowerCase())
@@ -46,6 +52,50 @@ const Home = () => {
     </TouchableOpacity>
   );
 
+  const openMenu = () => {
+    setMenuVisible(true);
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const closeMenu = () => {
+    Animated.timing(slideAnim, {
+      toValue: screenWidth,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => setMenuVisible(false));
+  };
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const deleteSelected = () => {
+    selectedIds.forEach(id => deleteChat(id));
+    setSelectedIds([]);
+    setDeleteMode(false);
+  };
+
+  const cardAnim = React.useRef(new Animated.Value(600)).current;
+
+  // chatVisible이 바뀔 때마다 애니메이션 실행
+  React.useEffect(() => {
+    if (chatVisible) {
+      Animated.timing(cardAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      cardAnim.setValue(600);
+    }
+  }, [chatVisible]);
+
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
@@ -56,19 +106,24 @@ const Home = () => {
         <View style={styles.header}>
           <TouchableOpacity onPress={() => setActiveView("chat")}>
             <Image
-              source={require("../assets/images/아라봇_로고.png")}
+              source={require("../assets/images/아라톡_로고_흰.png")}
               style={styles.headerLogo}
               resizeMode="contain"
             />
           </TouchableOpacity>
           <View style={styles.headerIcons}>
-            <TouchableOpacity onPress={() => setChatVisible(true)}>
+            <TouchableOpacity onPress={() => {
+              setSelectedChatId(null);
+              setChatVisible(true);
+            }}>
               <Ionicons name="add" size={30} color="#000" />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setActiveView("notification")}>
               <Ionicons name="notifications-outline" size={30} color="#000" />
             </TouchableOpacity>
-            <Ionicons name="menu" size={30} color="#000" />
+            <TouchableOpacity onPress={openMenu}>
+              <Ionicons name="menu" size={30} color="#000" />
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -106,7 +161,12 @@ const Home = () => {
                       <TouchableOpacity onPress={() => setSearchVisible(true)}>
                         <Ionicons name="search-outline" size={25} color="#000" />
                       </TouchableOpacity>
-                      <Ionicons name="trash-outline" size={25} color="#000" />
+                      <TouchableOpacity onPress={() => {
+                        setDeleteMode(!deleteMode);
+                        setSelectedIds([]);
+                      }}>
+                        <Ionicons name="trash-outline" size={25} color={deleteMode ? "#ff4444" : "#000"} />
+                      </TouchableOpacity>
                     </View>
                   </View>
                 )}
@@ -116,32 +176,69 @@ const Home = () => {
                 {/* 채팅 내역 리스트 */}
                 <ScrollView style={styles.scrollArea} showsVerticalScrollIndicator={false}>
                   {filteredHistory.map((item) => (
-                    <Swipeable
-                      key={item.id}
-                      renderRightActions={() => renderRightActions(item.id)}
-                      containerStyle={{ marginBottom: 9 }}
-                    >
+                    deleteMode ? (
                       <TouchableOpacity
-                        style={styles.historyCard}
-                        onPress={() => setChatVisible(true)}
+                        key={item.id}
+                        style={[styles.historyCard, { marginBottom: 9 }]}
+                        onPress={() => toggleSelect(item.id)}
                       >
+                        <Ionicons
+                          name={selectedIds.includes(item.id) ? "checkbox" : "square-outline"}
+                          size={22}
+                          color={selectedIds.includes(item.id) ? "#004099" : "#999"}
+                          style={{ marginRight: 10 }}
+                        />
                         <View style={styles.cardContent}>
-                          <HighlightText text={item.title} highlight={searchText} />
+                          <Text style={styles.cardTitle} numberOfLines={1}>{item.title}</Text>
                           <Text style={styles.cardDate}>{item.date}</Text>
                         </View>
-                        <Ionicons name="chevron-forward-outline" size={20} color="#000" />
                       </TouchableOpacity>
-                    </Swipeable>
+                    ) : (
+                      <Swipeable
+                        key={item.id}
+                        renderRightActions={() => renderRightActions(item.id)}
+                        containerStyle={{ marginBottom: 9 }}
+                      >
+                        <TouchableOpacity
+                          style={styles.historyCard}
+                          onPress={() => {
+                            setSelectedChatId(item.id);
+                            setChatVisible(true);
+                          }}
+                        >
+                          <View style={styles.cardContent}>
+                            <HighlightText text={item.title} highlight={searchText} />
+                            <Text style={styles.cardDate}>{item.date}</Text>
+                          </View>
+                          <Ionicons name="chevron-forward-outline" size={20} color="#000" />
+                        </TouchableOpacity>
+                      </Swipeable>
+                    )
                   ))}
                 </ScrollView>
 
-                {/* 채팅 시작하기 버튼 */}
-                <TouchableOpacity
-                  style={styles.startButton}
-                  onPress={() => setChatVisible(true)}
-                >
-                  <Text style={styles.startButtonText}>채팅 시작하기</Text>
-                </TouchableOpacity>
+                {/* 채팅 시작하기 / 삭제 버튼 */}
+                {deleteMode ? (
+                  <TouchableOpacity
+                    style={[styles.startButton, { backgroundColor: selectedIds.length > 0 ? "#ff4444" : "#999" }]}
+                    onPress={deleteSelected}
+                    disabled={selectedIds.length === 0}
+                  >
+                    <Text style={styles.startButtonText}>
+                      {selectedIds.length > 0 ? `${selectedIds.length}개 삭제하기` : "삭제할 항목을 선택해주세요"}
+                    </Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.startButton}
+                    onPress={() => {
+                      setSelectedChatId(null);
+                      setChatVisible(true);
+                    }}
+                  >
+                    <Text style={styles.startButtonText}>채팅 시작하기</Text>
+                  </TouchableOpacity>
+                )}
               </>
             ) : (
               <>
@@ -169,15 +266,88 @@ const Home = () => {
       {/* 채팅 Modal */}
       <Modal
         visible={chatVisible}
-        animationType="slide"
+        animationType="none"
         transparent={true}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <Chat onClose={() => setChatVisible(false)} />
-          </View>
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            activeOpacity={1}
+            onPress={() => setChatVisible(false)}
+          />
+          <Animated.View style={[styles.modalCard, { transform: [{ translateY: cardAnim }] }]}>
+            <Chat onClose={() => setChatVisible(false)} chatId={selectedChatId} />
+          </Animated.View>
         </View>
       </Modal>
+
+      {menuVisible && (
+        <>
+          <TouchableOpacity
+            style={styles.menuOverlay}
+            activeOpacity={1}
+            onPress={closeMenu}
+          />
+          <Animated.View style={[styles.sideMenu, { transform: [{ translateX: slideAnim }] }]}>
+            <View style={styles.menuHeader}>
+              <Text style={styles.menuTitle}>MENU</Text>
+            </View>
+
+            <View style={styles.menuItems}>
+              <Text style={styles.menuSectionTitle}>Account</Text>
+              <TouchableOpacity style={styles.menuItem}>
+                <Ionicons name="person-outline" size={22} color="#292929" />
+                <Text style={styles.menuItemText}>계정</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.menuItem}>
+                <Ionicons name="notifications-outline" size={22} color="#292929" />
+                <Text style={styles.menuItemText}>알림 설정</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.menuItem} onPress={() => setDisplayOpen(!displayOpen)}>
+                <Ionicons name="phone-portrait-outline" size={22} color="#292929" />
+                <Text style={styles.menuItemText}>디스플레이</Text>
+                <Ionicons
+                  name={displayOpen ? "chevron-up-outline" : "chevron-down-outline"}
+                  size={16}
+                  color="#999"
+                  style={{ marginLeft: "auto" }}
+                />
+              </TouchableOpacity>
+              {displayOpen && (
+                <View style={styles.subMenuItems}>
+                  <TouchableOpacity style={styles.subMenuItem}>
+                    <Ionicons name="globe-outline" size={18} color="#666" />
+                    <Text style={styles.subMenuItemText}>언어</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.subMenuItem}>
+                    <Ionicons name="text-outline" size={18} color="#666" />
+                    <Text style={styles.subMenuItemText}>텍스트 크기</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.subMenuItem}>
+                    <Ionicons name="moon-outline" size={18} color="#666" />
+                    <Text style={styles.subMenuItemText}>화면 모드</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+              <TouchableOpacity style={styles.menuItem}>
+                <Ionicons name="chatbubbles-outline" size={22} color="#292929" />
+                <Text style={styles.menuItemText}>채팅 서랍</Text>
+              </TouchableOpacity>
+
+              <Text style={[styles.menuSectionTitle, { marginTop: 20 }]}>Community</Text>
+              <TouchableOpacity style={styles.menuItem}>
+                <Ionicons name="library-outline" size={22} color="#292929" />
+                <Text style={styles.menuItemText}>책물림</Text>
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity style={styles.logoutItem}>
+              <Ionicons name="log-out-outline" size={22} color="#292929" />
+              <Text style={styles.menuItemText}>로그아웃</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </>
+      )}
     </>
   );
 };

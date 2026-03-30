@@ -3,7 +3,7 @@ import { StyleSheet } from "react-native";
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#f0f5fa",
     paddingTop: 60,
   },
   header: {
@@ -144,5 +144,82 @@ export const styles = StyleSheet.create({
   highlightText: {
     color: "#004099",
     fontWeight: "700",
+  },
+  menuOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.4)",
+  },
+  sideMenu: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    width: "81%",
+    backgroundColor: "#fff",
+    paddingTop: 80,
+    paddingHorizontal: 25,
+    shadowColor: "#000",
+    shadowOffset: { width: -4, height: 0 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 10,
+    borderTopLeftRadius: 50,
+    borderBottomLeftRadius: 50,
+  },
+  menuHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 30,
+  },
+  menuTitle: {
+    fontSize: 30,
+    fontWeight: "700",
+    color: "#004099",
+  },
+  menuSectionTitle: {
+    fontSize: 12,
+    color: "#999",
+    fontWeight: "500",
+  },
+  menuItems: {
+    gap: 21,
+    flex: 1,
+    paddingTop: 30,
+  },
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  menuItemText: {
+    fontSize: 17,
+    color: "#292929",
+    fontWeight: "500",
+  },
+  logoutItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingBottom: 70,
+  },
+  subMenuItems: {
+    paddingLeft: 30,
+    gap: 16,
+    marginBottom: 4,
+  },
+  subMenuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  subMenuItemText: {
+    fontSize: 17,
+    color: "#666",
+    fontWeight: "500",
   },
 });
