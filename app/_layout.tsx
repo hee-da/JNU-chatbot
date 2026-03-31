@@ -6,7 +6,7 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ChatProvider>
-        <Stack screenOptions={{ headerShown: false }}>
+        <Stack screenOptions={{ headerShown: false, animation: "fade", animationDuration: 90 }}>
           <Stack.Screen name="index" />
           <Stack.Screen name="booting" />
           <Stack.Screen name="login" />

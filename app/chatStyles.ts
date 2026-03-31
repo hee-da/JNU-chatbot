@@ -45,9 +45,9 @@ export const styles = StyleSheet.create({
     fontWeight: "700",
     marginTop: 4,
   },
-  closeButton: {
+  popupButton: {
     position: "absolute",
-    right: 16,
+    right: 20,
     top: 12,
   },
   divider: {
@@ -162,5 +162,40 @@ export const styles = StyleSheet.create({
   sendIcon: {
     fontSize: 18,
     color: "#979c9e",
+  },
+  menuBackdrop: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 99,
+  },
+  popupMenu: {
+    position: "absolute",
+    top: 45,
+    right: 20,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+    zIndex: 100,
+    minWidth: 160,
+  },
+  popupItem: {
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+  },
+  popupItemText: {
+    fontSize: 15,
+    color: "#292929",
+  },
+  popupDivider: {
+    height: 1,
+    backgroundColor: "#f0f0f0",
+    marginHorizontal: 12,
   },
 });

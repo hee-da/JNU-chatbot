@@ -42,9 +42,9 @@ const Chat = (props: Props) => {
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [keyboardHeight, setKeyboardHeight] = React.useState(0);
   const [currentChatId, setCurrentChatId] = React.useState<number | null>(null);
+  const [menuVisible, setMenuVisible] = React.useState(false);
   const { addChat, updateChatContent, addMessage, chatHistory } = useChatContext();
 
-  // 기존 채팅 불러오기
   React.useEffect(() => {
     if (props.chatId) {
       const existing = chatHistory.find(c => c.id === props.chatId);
@@ -58,15 +58,11 @@ const Chat = (props: Props) => {
   React.useEffect(() => {
     const showSub = Keyboard.addListener(
       Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
-      (e: KeyboardEvent) => {
-        setKeyboardHeight(e.endCoordinates.height);
-      }
+      (e: KeyboardEvent) => setKeyboardHeight(e.endCoordinates.height)
     );
     const hideSub = Keyboard.addListener(
       Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
-      () => {
-        setKeyboardHeight(0);
-      }
+      () => setKeyboardHeight(0)
     );
     return () => {
       showSub.remove();
@@ -84,19 +80,11 @@ const Chat = (props: Props) => {
     const minutes = now.getMinutes().toString().padStart(2, "0");
     const ampm = hours < 12 ? "오전" : "오후";
     const hour12 = hours % 12 || 12;
-    const formatted = `${year}년 ${month}월 ${day}일 ${dayOfWeek}요일 ${ampm} ${hour12}:${minutes}`;
-    return formatted;
+    return `${year}년 ${month}월 ${day}일 ${dayOfWeek}요일 ${ampm} ${hour12}:${minutes}`;
   };
 
-  const getShortTime = (fullTime: string) => {
-    const parts = fullTime.split(" ");
-    return parts.slice(4).join(" ");
-  };
-
-  const getDateOnly = (fullTime: string) => {
-    const parts = fullTime.split(" ");
-    return parts.slice(0, 4).join(" ");
-  };
+  const getShortTime = (fullTime: string) => fullTime.split(" ").slice(4).join(" ");
+  const getDateOnly = (fullTime: string) => fullTime.split(" ").slice(0, 4).join(" ");
 
   const sendMessage = (text: string, isQuickBtn: boolean = false) => {
     if (text.trim().length === 0) return;
@@ -139,7 +127,7 @@ const Chat = (props: Props) => {
   return (
     <View style={[styles.cardInner, { marginBottom: keyboardHeight }]}>
 
-      {/* 카드 상단 - 제록이 프로필 + X버튼 */}
+      {/* 카드 상단 - 제록이 프로필 + 더보기 버튼 */}
       <View style={styles.cardHeader}>
         <View style={styles.profileRow}>
           <Image
@@ -149,10 +137,37 @@ const Chat = (props: Props) => {
           />
           <Text style={styles.profileName}>제록이</Text>
         </View>
-        <TouchableOpacity style={styles.closeButton} onPress={props.onClose}>
-          <Ionicons name="close" size={30} color="#999" />
+        <TouchableOpacity style={styles.popupButton} onPress={() => setMenuVisible(!menuVisible)}>
+          <Ionicons name="ellipsis-horizontal" size={24} color="#999" />
         </TouchableOpacity>
       </View>
+
+      {/* 팝업 메뉴 */}
+      {menuVisible && (
+        <>
+          <TouchableOpacity
+            style={styles.menuBackdrop}
+            activeOpacity={1}
+            onPress={() => setMenuVisible(false)}
+          />
+          <View style={styles.popupMenu}>
+            <TouchableOpacity style={styles.popupItem} onPress={() => {
+              setMenuVisible(false);
+              props.onClose?.();
+            }}>
+              <Text style={styles.popupItemText}>채팅창 닫기</Text>
+            </TouchableOpacity>
+            <View style={styles.popupDivider} />
+            <TouchableOpacity style={styles.popupItem} onPress={() => setMenuVisible(false)}>
+              <Text style={styles.popupItemText}>채팅 보관하기</Text>
+            </TouchableOpacity>
+            <View style={styles.popupDivider} />
+            <TouchableOpacity style={styles.popupItem} onPress={() => setMenuVisible(false)}>
+              <Text style={styles.popupItemText}>답변 수정 요청</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
 
       <View style={styles.divider} />
 

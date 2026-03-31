@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as React from "react";
 import { Animated, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
@@ -18,6 +18,7 @@ const Home = () => {
   const [displayOpen, setDisplayOpen] = React.useState(false);
   const [deleteMode, setDeleteMode] = React.useState(false);
   const [selectedIds, setSelectedIds] = React.useState<number[]>([]);
+  const router = useRouter();
 
   const { chatHistory, deleteChat } = useChatContext();
   const screenWidth = Dimensions.get("window").width;
@@ -225,7 +226,11 @@ const Home = () => {
                     disabled={selectedIds.length === 0}
                   >
                     <Text style={styles.startButtonText}>
-                      {selectedIds.length > 0 ? `${selectedIds.length}개 삭제하기` : "삭제할 항목을 선택해주세요"}
+                      {selectedIds.length > 0
+                        ? `${selectedIds.length}개 삭제하기`
+                        : chatHistory.length === 0
+                        ? "삭제할 채팅이 없습니다"
+                        : "삭제할 항목을 선택해주세요"}
                     </Text>
                   </TouchableOpacity>
                 ) : (
@@ -341,7 +346,10 @@ const Home = () => {
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity style={styles.logoutItem}>
+            <TouchableOpacity
+              style={styles.logoutItem}
+              onPress={() => router.replace("/login")}
+            >
               <Ionicons name="log-out-outline" size={22} color="#292929" />
               <Text style={styles.menuItemText}>로그아웃</Text>
             </TouchableOpacity>
