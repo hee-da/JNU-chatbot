@@ -4,6 +4,8 @@ import { Image, Keyboard, KeyboardEvent, Platform, ScrollView, Text, TextInput, 
 import { useChatContext } from "./chatContext";
 import { styles } from "./chatStyles";
 
+const BACKEND_URL = "http://여기에_백엔드_주소"; // 배포 후 변경
+
 type Message = {
   text: string;
   isUser: boolean;
@@ -86,7 +88,7 @@ const Chat = (props: Props) => {
   const getShortTime = (fullTime: string) => fullTime.split(" ").slice(4).join(" ");
   const getDateOnly = (fullTime: string) => fullTime.split(" ").slice(0, 4).join(" ");
 
-  const sendMessage = (text: string, isQuickBtn: boolean = false) => {
+  const sendMessage = async (text: string, isQuickBtn: boolean = false) => {
     if (text.trim().length === 0) return;
     const time = getTime();
     let chatId = props.chatId ?? currentChatId;
@@ -111,17 +113,44 @@ const Chat = (props: Props) => {
     setShowQuickButtons(false);
     setInputText("");
 
-    setTimeout(() => {
-      const randomImage = jerokImages[Math.floor(Math.random() * jerokImages.length)];
+    // 로딩 메시지 먼저 표시
+    const randomImage = jerokImages[Math.floor(Math.random() * jerokImages.length)];
+    const loadingMessage: Message = {
+      text: "답변을 불러오는 중...🔍",
+      isUser: false,
+      time: getTime(),
+      image: randomImage,
+    };
+    setMessages(prev => [...prev, loadingMessage]);
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: text }),
+      });
+      const data = await response.json();
+
       const botMessage: Message = {
-        text: "답변을 불러오는 중...🔍",
+        text: data.answer,
         isUser: false,
         time: getTime(),
         image: randomImage,
       };
-      setMessages(prev => [...prev, botMessage]);
+      // 로딩 메시지를 실제 답변으로 교체
+      setMessages(prev => [...prev.slice(0, -1), botMessage]);
       if (chatId) addMessage(chatId, botMessage);
-    }, 1000);
+
+    } catch (error) {
+      const errorMessage: Message = {
+        text: "답변을 불러오지 못했어요 😢 다시 시도해줘!",
+        isUser: false,
+        time: getTime(),
+        image: randomImage,
+      };
+      setMessages(prev => [...prev.slice(0, -1), errorMessage]);
+      if (chatId) addMessage(chatId, errorMessage);
+    }
   };
 
   return (
