@@ -198,4 +198,20 @@ export const styles = StyleSheet.create({
     backgroundColor: "#f0f0f0",
     marginHorizontal: 12,
   },
+  emptyContainer: {
+  flex: 1,
+  alignItems: "center",
+  justifyContent: "center",
+  paddingTop: 80,
+  gap: 8,
+},
+emptyText: {
+  fontSize: 16,
+  fontWeight: "600",
+  color: "#292929",
+},
+emptySubText: {
+  fontSize: 14,
+  color: "#999",
+},
 });

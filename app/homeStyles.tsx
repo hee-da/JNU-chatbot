@@ -54,9 +54,9 @@ export const styles = StyleSheet.create({
   },
   titleIcons: {
     flexDirection: "row",
-    gap: 15,
+    gap: 18,
     position: "absolute",
-    right: 20,
+    right: 24,
   },
   divider: {
     height: 3,
@@ -89,13 +89,18 @@ export const styles = StyleSheet.create({
     color: "#6e6e6e",
   },
   startButton: {
-    backgroundColor: "#000",
+    backgroundColor: "#2346A0",
     borderRadius: 48,
     height: 50,
     justifyContent: "center",
     alignItems: "center",
     marginHorizontal: 20,
     marginVertical: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 4,
   },
   startButtonText: {
     fontSize: 16,
@@ -220,6 +225,30 @@ export const styles = StyleSheet.create({
   subMenuItemText: {
     fontSize: 17,
     color: "#666",
+    fontWeight: "500",
+  },
+  emptyContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingTop: 135,
+    gap: 6,
+  },
+  emptyImage: {
+    width: 100,
+    height: 100,
+    marginBottom: 10,
+  },
+  emptyText: {
+    fontSize: 15,
+    color: "#666",
+    textAlign: "center",
+    fontWeight: "600",
+  },
+  emptySubText: {
+    fontSize: 14,
+    color: "#999",
+    textAlign: "center",
     fontWeight: "500",
   },
 });

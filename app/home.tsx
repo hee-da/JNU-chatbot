@@ -18,11 +18,13 @@ const Home = () => {
   const [displayOpen, setDisplayOpen] = React.useState(false);
   const [deleteMode, setDeleteMode] = React.useState(false);
   const [selectedIds, setSelectedIds] = React.useState<number[]>([]);
+  const [isPressed, setIsPressed] = React.useState(false);
   const router = useRouter();
 
   const { chatHistory, deleteChat } = useChatContext();
   const screenWidth = Dimensions.get("window").width;
   const slideAnim = React.useRef(new Animated.Value(screenWidth)).current;
+  const buttonScale = React.useRef(new Animated.Value(1)).current;
 
   const filteredHistory = chatHistory.filter(item =>
     item.title.toLowerCase().includes(searchText.toLowerCase())
@@ -84,7 +86,16 @@ const Home = () => {
 
   const cardAnim = React.useRef(new Animated.Value(600)).current;
 
-  // chatVisible이 바뀔 때마다 애니메이션 실행
+  const onPressIn = () => {
+    setIsPressed(true);
+    Animated.spring(buttonScale, { toValue: 0.97, useNativeDriver: true }).start();
+  };
+
+  const onPressOut = () => {
+    setIsPressed(false);
+    Animated.spring(buttonScale, { toValue: 1, useNativeDriver: true }).start();
+  };
+
   React.useEffect(() => {
     if (chatVisible) {
       Animated.timing(cardAnim, {
@@ -113,12 +124,6 @@ const Home = () => {
             />
           </TouchableOpacity>
           <View style={styles.headerIcons}>
-            <TouchableOpacity onPress={() => {
-              setSelectedChatId(null);
-              setChatVisible(true);
-            }}>
-              <Ionicons name="add" size={30} color="#000" />
-            </TouchableOpacity>
             <TouchableOpacity onPress={() => setActiveView("notification")}>
               <Ionicons name="notifications-outline" size={30} color="#000" />
             </TouchableOpacity>
@@ -176,46 +181,66 @@ const Home = () => {
 
                 {/* 채팅 내역 리스트 */}
                 <ScrollView style={styles.scrollArea} showsVerticalScrollIndicator={false}>
-                  {filteredHistory.map((item) => (
-                    deleteMode ? (
-                      <TouchableOpacity
-                        key={item.id}
-                        style={[styles.historyCard, { marginBottom: 9 }]}
-                        onPress={() => toggleSelect(item.id)}
-                      >
-                        <Ionicons
-                          name={selectedIds.includes(item.id) ? "checkbox" : "square-outline"}
-                          size={22}
-                          color={selectedIds.includes(item.id) ? "#004099" : "#999"}
-                          style={{ marginRight: 10 }}
-                        />
-                        <View style={styles.cardContent}>
-                          <Text style={styles.cardTitle} numberOfLines={1}>{item.title}</Text>
-                          <Text style={styles.cardDate}>{item.date}</Text>
-                        </View>
-                      </TouchableOpacity>
-                    ) : (
-                      <Swipeable
-                        key={item.id}
-                        renderRightActions={() => renderRightActions(item.id)}
-                        containerStyle={{ marginBottom: 9 }}
-                      >
+                  {filteredHistory.length === 0 ? (
+                    <View style={styles.emptyContainer}>
+                      <Image
+                        source={require("../assets/images/제록이_학잠.png")}
+                        style={styles.emptyImage}
+                        resizeMode="contain"
+                      />
+                      <Text style={styles.emptyText}>
+                        {searchText.trim() !== ""
+                          ? "검색 결과가 없어요."
+                          : "아직 채팅 내역이 없어요."}
+                      </Text>
+                      <Text style={styles.emptySubText}>
+                        {searchText.trim() !== ""
+                          ? "다른 검색어를 입력해보세요."
+                          : "궁금한 내용을 제록이에게 물어보세요!"}
+                      </Text>
+                    </View>
+                  ) : (
+                    filteredHistory.map((item) => (
+                      deleteMode ? (
                         <TouchableOpacity
-                          style={styles.historyCard}
-                          onPress={() => {
-                            setSelectedChatId(item.id);
-                            setChatVisible(true);
-                          }}
+                          key={item.id}
+                          style={[styles.historyCard, { marginBottom: 9 }]}
+                          onPress={() => toggleSelect(item.id)}
                         >
+                          <Ionicons
+                            name={selectedIds.includes(item.id) ? "checkbox" : "square-outline"}
+                            size={22}
+                            color={selectedIds.includes(item.id) ? "#004099" : "#999"}
+                            style={{ marginRight: 10 }}
+                          />
                           <View style={styles.cardContent}>
-                            <HighlightText text={item.title} highlight={searchText} />
+                            <Text style={styles.cardTitle} numberOfLines={1}>{item.title}</Text>
                             <Text style={styles.cardDate}>{item.date}</Text>
                           </View>
-                          <Ionicons name="chevron-forward-outline" size={20} color="#000" />
                         </TouchableOpacity>
-                      </Swipeable>
-                    )
-                  ))}
+                      ) : (
+                        <Swipeable
+                          key={item.id}
+                          renderRightActions={() => renderRightActions(item.id)}
+                          containerStyle={{ marginBottom: 9 }}
+                        >
+                          <TouchableOpacity
+                            style={styles.historyCard}
+                            onPress={() => {
+                              setSelectedChatId(item.id);
+                              setChatVisible(true);
+                            }}
+                          >
+                            <View style={styles.cardContent}>
+                              <HighlightText text={item.title} highlight={searchText} />
+                              <Text style={styles.cardDate}>{item.date}</Text>
+                            </View>
+                            <Ionicons name="chevron-forward-outline" size={20} color="#000" />
+                          </TouchableOpacity>
+                        </Swipeable>
+                      )
+                    ))
+                  )}
                 </ScrollView>
 
                 {/* 채팅 시작하기 / 삭제 버튼 */}
@@ -234,15 +259,20 @@ const Home = () => {
                     </Text>
                   </TouchableOpacity>
                 ) : (
-                  <TouchableOpacity
-                    style={styles.startButton}
-                    onPress={() => {
-                      setSelectedChatId(null);
-                      setChatVisible(true);
-                    }}
-                  >
-                    <Text style={styles.startButtonText}>채팅 시작하기</Text>
-                  </TouchableOpacity>
+                  <Animated.View style={{ transform: [{ scale: buttonScale }], marginHorizontal: 20, marginVertical: 16 }}>
+                    <TouchableOpacity
+                      style={[styles.startButton, { backgroundColor: isPressed ? "#1B377E" : "#2346A0", marginHorizontal: 0, marginVertical: 0 }]}
+                      onPress={() => {
+                        setSelectedChatId(null);
+                        setChatVisible(true);
+                      }}
+                      onPressIn={onPressIn}
+                      onPressOut={onPressOut}
+                      activeOpacity={1}
+                    >
+                      <Text style={styles.startButtonText}>새 채팅 시작하기</Text>
+                    </TouchableOpacity>
+                  </Animated.View>
                 )}
               </>
             ) : (
@@ -259,6 +289,15 @@ const Home = () => {
                 <View style={styles.divider} />
 
                 <ScrollView style={styles.scrollArea} showsVerticalScrollIndicator={false}>
+                  <View style={styles.emptyContainer}>
+                    <Image
+                      source={require("../assets/images/제록이_점프.png")}
+                      style={styles.emptyImage}
+                      resizeMode="contain"
+                    />
+                    <Text style={styles.emptyText}>알림이 없어요.</Text>
+                    <Text style={styles.emptySubText}>새로운 알림이 오면 여기에 표시돼요.</Text>
+                  </View>
                 </ScrollView>
               </>
             )}
