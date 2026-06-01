@@ -19,6 +19,8 @@ const Home = () => {
   const [deleteMode, setDeleteMode] = React.useState(false);
   const [selectedIds, setSelectedIds] = React.useState<number[]>([]);
   const [isPressed, setIsPressed] = React.useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = React.useState<number | null>(null);
+  const [deleteBulkConfirm, setDeleteBulkConfirm] = React.useState(false);
   const router = useRouter();
 
   const { chatHistory, deleteChat } = useChatContext();
@@ -49,7 +51,7 @@ const Home = () => {
   const renderRightActions = (id: number) => (
     <TouchableOpacity
       style={styles.deleteButton}
-      onPress={() => deleteChat(id)}
+      onPress={() => setDeleteConfirmId(id)}
     >
       <Ionicons name="trash-outline" size={24} color="#fff" />
     </TouchableOpacity>
@@ -88,12 +90,20 @@ const Home = () => {
 
   const onPressIn = () => {
     setIsPressed(true);
-    Animated.spring(buttonScale, { toValue: 0.97, useNativeDriver: true }).start();
+    Animated.spring(buttonScale, {
+      toValue: 0.95,
+      speed: 50,
+      useNativeDriver: true,
+    }).start();
   };
 
   const onPressOut = () => {
     setIsPressed(false);
-    Animated.spring(buttonScale, { toValue: 1, useNativeDriver: true }).start();
+    Animated.spring(buttonScale, {
+      toValue: 1,
+      speed: 20,
+      useNativeDriver: true,
+    }).start();
   };
 
   React.useEffect(() => {
@@ -125,7 +135,11 @@ const Home = () => {
           </TouchableOpacity>
           <View style={styles.headerIcons}>
             <TouchableOpacity onPress={() => setActiveView("notification")}>
-              <Ionicons name="notifications-outline" size={30} color="#000" />
+              <Ionicons
+                name={activeView === "notification" ? "notifications" : "notifications-outline"}
+                size={30}
+                color={activeView === "notification" ? "#2346A0" : "#000"}
+              />
             </TouchableOpacity>
             <TouchableOpacity onPress={openMenu}>
               <Ionicons name="menu" size={30} color="#000" />
@@ -184,7 +198,7 @@ const Home = () => {
                   {filteredHistory.length === 0 ? (
                     <View style={styles.emptyContainer}>
                       <Image
-                        source={require("../assets/images/제록이_학잠.png")}
+                        source={require("../assets/images/제록이_챗내.png")}
                         style={styles.emptyImage}
                         resizeMode="contain"
                       />
@@ -247,7 +261,9 @@ const Home = () => {
                 {deleteMode ? (
                   <TouchableOpacity
                     style={[styles.startButton, { backgroundColor: selectedIds.length > 0 ? "#ff4444" : "#999" }]}
-                    onPress={deleteSelected}
+                    onPress={() => {
+                      if (selectedIds.length > 0) setDeleteBulkConfirm(true);
+                    }}
                     disabled={selectedIds.length === 0}
                   >
                     <Text style={styles.startButtonText}>
@@ -291,8 +307,8 @@ const Home = () => {
                 <ScrollView style={styles.scrollArea} showsVerticalScrollIndicator={false}>
                   <View style={styles.emptyContainer}>
                     <Image
-                      source={require("../assets/images/제록이_점프.png")}
-                      style={styles.emptyImage}
+                      source={require("../assets/images/제록이_알림.png")}
+                      style={styles.emptyImageWide}
                       resizeMode="contain"
                     />
                     <Text style={styles.emptyText}>알림이 없어요.</Text>
@@ -322,6 +338,70 @@ const Home = () => {
           <Animated.View style={[styles.modalCard, { transform: [{ translateY: cardAnim }] }]}>
             <Chat onClose={() => setChatVisible(false)} chatId={selectedChatId} />
           </Animated.View>
+        </View>
+      </Modal>
+
+      {/* 스와이프 삭제 확인 모달 */}
+      <Modal
+        visible={deleteConfirmId !== null}
+        animationType="fade"
+        transparent={true}
+      >
+        <View style={styles.confirmOverlay}>
+          <View style={styles.confirmBox}>
+            <Text style={styles.confirmTitle}>채팅 삭제</Text>
+            <Text style={styles.confirmText}>이 채팅을 삭제할까요?{"\n"}삭제된 채팅은 복구할 수 없어요.</Text>
+            <View style={styles.confirmButtons}>
+              <TouchableOpacity
+                style={styles.confirmCancel}
+                onPress={() => setDeleteConfirmId(null)}
+              >
+                <Text style={styles.confirmCancelText}>취소</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.confirmDelete}
+                onPress={() => {
+                  if (deleteConfirmId !== null) {
+                    deleteChat(deleteConfirmId);
+                    setDeleteConfirmId(null);
+                  }
+                }}
+              >
+                <Text style={styles.confirmDeleteText}>삭제</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* 일괄 삭제 확인 모달 */}
+      <Modal
+        visible={deleteBulkConfirm}
+        animationType="fade"
+        transparent={true}
+      >
+        <View style={styles.confirmOverlay}>
+          <View style={styles.confirmBox}>
+            <Text style={styles.confirmTitle}>채팅 삭제</Text>
+            <Text style={styles.confirmText}>{selectedIds.length}개의 채팅을 삭제할까요?{"\n"}삭제된 채팅은 복구할 수 없어요.</Text>
+            <View style={styles.confirmButtons}>
+              <TouchableOpacity
+                style={styles.confirmCancel}
+                onPress={() => setDeleteBulkConfirm(false)}
+              >
+                <Text style={styles.confirmCancelText}>취소</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.confirmDelete}
+                onPress={() => {
+                  deleteSelected();
+                  setDeleteBulkConfirm(false);
+                }}
+              >
+                <Text style={styles.confirmDeleteText}>삭제</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       </Modal>
 
